@@ -64,9 +64,9 @@ void loop() {
     // delay(250);
 
     digitalWrite(ONBOARD_LED_PIN, HIGH); // writes a digital high to pin 2
-    delay(1000); // waits for 1000 milliseconds (1 second)
+    delay(100); // waits for 1000 milliseconds (1 second)
     digitalWrite(ONBOARD_LED_PIN, LOW); // writes a digital low to pin 2
-    delay(1000);
+    delay(100);
 
     for (auto myController : myControllers) { // Only execute code when controller is connected
         if (myController && myController->isConnected() && myController->hasData()) {        
