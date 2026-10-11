@@ -8,6 +8,13 @@
 #include <uni.h>
 #include "controller_callbacks.h"
 
+#define ONBOARD_LED_PIN 2
+// #include <QTRSensors.h>
+
+// QTRSensors qtr;
+// uint16_t sensors[2];
+
+
 extern ControllerPtr myControllers[BP32_MAX_GAMEPADS]; // BP32 library allows for up to 4 concurrent controller connections, but we only need 1
 
 void dumpGamepad(ControllerPtr ctl) {
@@ -30,6 +37,18 @@ void dumpGamepad(ControllerPtr ctl) {
 }
 
 void setup() {
+    pinMode(ONBOARD_LED_PIN, OUTPUT);
+    Serial.begin(115200);
+    // qtr.setTypeAnalog(); // or setTypeAnalog()
+    // qtr.setSensorPins((const uint8_t[]) {32, 33}, 2); // pin numbers go in the curly brackets {}, and number of sensors in use goes after
+    
+    // for (uint8_t i = 0; i < 250; i++) { 
+    //     Console.printf("calibrating %d/250\n", i); // 250 is the number of calibrations recommended by manufacturer
+    //     qtr.calibrate(); 
+    //     delay(20);
+    // }
+
+    
     BP32.setup(&onConnectedController, &onDisconnectedController);
     BP32.forgetBluetoothKeys(); 
     esp_log_level_set("gpio", ESP_LOG_ERROR); // Suppress info log spam from gpio_isr_service
@@ -38,7 +57,17 @@ void setup() {
 
 void loop() {
     vTaskDelay(1); // Ensures WDT does not get triggered when no controller is connected
-    BP32.update(); 
+    BP32.update();
+    
+    // qtr.readLineBlack(sensors); // Get calibrated sensor values returned into sensors[]
+    // Console.printf("S1: %d S2: %d\n", sensors[0], sensors[1]);
+    // delay(250);
+
+    digitalWrite(ONBOARD_LED_PIN, HIGH); // writes a digital high to pin 2
+    delay(1000); // waits for 1000 milliseconds (1 second)
+    digitalWrite(ONBOARD_LED_PIN, LOW); // writes a digital low to pin 2
+    delay(1000);
+
     for (auto myController : myControllers) { // Only execute code when controller is connected
         if (myController && myController->isConnected() && myController->hasData()) {        
           
