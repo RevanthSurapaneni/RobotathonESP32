@@ -7,6 +7,7 @@
 #include <Bluepad32.h>
 #include <uni.h>
 #include "controller_callbacks.h"
+#include "line.h"
 
 #define ONBOARD_LED_PIN 2
 // #include <QTRSensors.h>
@@ -48,6 +49,8 @@ void setup() {
     //     delay(20);
     // }
 
+    setupLineSensor();
+
     
     BP32.setup(&onConnectedController, &onDisconnectedController);
     BP32.forgetBluetoothKeys(); 
@@ -80,4 +83,6 @@ void loop() {
             dumpGamepad(myController); // Prints the gamepad state, delete or comment if don't need
         }
     }
+
+    loopLineSensor();
 }
