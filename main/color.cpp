@@ -14,7 +14,7 @@
 TwoWire I2C_0 = TwoWire(0);
 APDS9960 apds = APDS9960(I2C_0, APDS9960_INT);
 
-void setup() {
+void setupColorSensor() {
     //sets up I2C protocol
     I2C_0.begin(I2C_SDA, I2C_SCL, I2C_FREQ);
 
@@ -24,7 +24,7 @@ void setup() {
     Serial.begin(115200);
 }
 
-void loop() {
+void loopColorSensor() {
     int r, g, b, a;
     while (!apds.colorAvailable()) { delay(5); } // Wait until color is read from the sensor 
     apds.readColor(r, g, b, a);
