@@ -40,7 +40,7 @@ void dumpGamepad(ControllerPtr ctl) {
 void setup() {
     pinMode(ONBOARD_LED_PIN, OUTPUT);
     Serial.begin(115200);
-    // qtr.setTypeAnalog(); // or setTypeAnalog()
+    // qtr.setTypeAnalog(); // or setTypeAnalog()                                //////////////////////////////////////////////////.
     // qtr.setSensorPins((const uint8_t[]) {32, 33}, 2); // pin numbers go in the curly brackets {}, and number of sensors in use goes after
     
     // for (uint8_t i = 0; i < 250; i++) { 
@@ -49,12 +49,15 @@ void setup() {
     //     delay(20);
     // }
 
-    setupLineSensor();
+    //setupLineSensor();
 
     
     BP32.setup(&onConnectedController, &onDisconnectedController);
     BP32.forgetBluetoothKeys(); 
     esp_log_level_set("gpio", ESP_LOG_ERROR); // Suppress info log spam from gpio_isr_service
+    bd_addr_t addr;
+    sscanf_bd_addr("DC:CD:18:A5:A6:CB", addr);
+    uni_bt_allowlist_add_addr(addr);
     uni_bt_allowlist_set_enabled(true);
 }
 
@@ -84,5 +87,5 @@ void loop() {
         }
     }
 
-    loopLineSensor();
+    //loopLineSensor();
 }
