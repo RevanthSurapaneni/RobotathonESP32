@@ -8,6 +8,7 @@
 #include <uni.h>
 #include "controller_callbacks.h"
 #include "line.h"
+#include "color.h"
 
 #define ONBOARD_LED_PIN 2
 // #include <QTRSensors.h>
@@ -49,7 +50,8 @@ void setup() {
     //     delay(20);
     // }
 
-    //setupLineSensor();
+    setupLineSensor();
+    setupColorSensor();
 
     
     BP32.setup(&onConnectedController, &onDisconnectedController);
@@ -87,5 +89,6 @@ void loop() {
         }
     }
 
-    //loopLineSensor();
+    loopLineSensor();
+    loopColorSensor();
 }
