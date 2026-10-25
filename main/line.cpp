@@ -16,17 +16,17 @@ void setupLineSensor() {
 
     // calibration sequence
     for (uint8_t i = 0; i < 250; i++) { 
-        Serial.printf("calibrating %d/250\n", i); // 250 is the number of calibrations recommended by manufacturer
+        printf("calibrating %d/250\n", i); // 250 is the number of calibrations recommended by manufacturer
         qtr.calibrate(); 
         delay(20);
     }
-    Serial.println("Calibration complete");
+    printf("Calibration complete\n");
 }
 
 void loopLineSensor() {
     qtr.readLineBlack(sensors); // Get calibrated sensor values returned into sensors[]
     for(int i = 0; i < 8; i++){
-    Serial.printf("S1: %d S2: %d S3: %d S4: %d S5: %d S6: %d S7: %d S8: %d\n", sensors[0], sensors[1], sensors[2], sensors[3], sensors[4], sensors[5], sensors[6], sensors[7]);
+    printf("S1: %d S2: %d S3: %d S4: %d S5: %d S6: %d S7: %d S8: %d\n", sensors[0], sensors[1], sensors[2], sensors[3], sensors[4], sensors[5], sensors[6], sensors[7]);
     }
 
     //1000 = dark, 0 = white.
