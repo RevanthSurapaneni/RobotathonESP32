@@ -39,7 +39,7 @@ void dumpGamepad(ControllerPtr ctl) {
 }
 
 void setup() {
-    pinMode(ONBOARD_LED_PIN, OUTPUT);
+    //pinMode(ONBOARD_LED_PIN, OUTPUT);
     Serial.begin(115200);
     // qtr.setTypeAnalog(); // or setTypeAnalog()                                //////////////////////////////////////////////////.
     // qtr.setSensorPins((const uint8_t[]) {32, 33}, 2); // pin numbers go in the curly brackets {}, and number of sensors in use goes after
@@ -50,7 +50,7 @@ void setup() {
     //     delay(20);
     // }
 
-    setupLineSensor();
+    // setupLineSensor();
     setupColorSensor();
 
     
@@ -71,10 +71,7 @@ void loop() {
     // Console.printf("S1: %d S2: %d\n", sensors[0], sensors[1]);
     // delay(250);
 
-    digitalWrite(ONBOARD_LED_PIN, HIGH); // writes a digital high to pin 2
-    delay(100); // waits for 1000 milliseconds (1 second)
-    digitalWrite(ONBOARD_LED_PIN, LOW); // writes a digital low to pin 2
-    delay(100);
+  
 
     for (auto myController : myControllers) { // Only execute code when controller is connected
         if (myController && myController->isConnected() && myController->hasData()) {        
@@ -89,6 +86,6 @@ void loop() {
         }
     }
 
-    loopLineSensor();
+    // loopLineSensor();
     loopColorSensor();
 }
