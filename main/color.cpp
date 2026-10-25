@@ -3,6 +3,7 @@
 
 #include <Wire.h>
 #include <Arduino_APDS9960.h>
+#include <bits/stdc++.h>
 
 #define APDS9960_INT -1   // INT pin not connected
 #define I2C_SDA 21
