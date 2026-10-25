@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <Arduino_APDS9960.h>
 #include <bits/stdc++.h>
+#include "color.h"
 
 #define APDS9960_INT 2
 #define I2C_SDA 21
