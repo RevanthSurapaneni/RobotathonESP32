@@ -12,7 +12,7 @@ void setupLineSensor() {
     // set up Serial Communication and sensor pins
     //USE LEFTMOST AND RIGHTMOST PINS MAYBE
     qtr.setTypeAnalog(); // or setTypeAnalog()
-    qtr.setSensorPins((const uint8_t[]) {32, 33, 34, 35, 36, 39, 25, 26}, 8); // pin numbers go in the curly brackets {}, and number of sensors in use goes after
+    qtr.setSensorPins((const uint8_t[]) {12, 14, 27, 26, 25, 33, 32, 35}, 8); // pin numbers go in the curly brackets {}, and number of sensors in use goes after
 
     // calibration sequence
     for (uint8_t i = 0; i < 250; i++) { 
