@@ -1,4 +1,4 @@
-// #pragma once
+ #pragma once
 // // Line sensor functions
-// void setupLineSensor();
-// void loopLineSensor();
+void setupLineSensor();
+void loopLineSensor();
