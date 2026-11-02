@@ -16,6 +16,11 @@
 
 // QTRSensors qtr;
 // uint16_t sensors[2];
+#define TEST_L_IN1 16
+#define TEST_L_IN2 17
+#define TEST_R_IN1 18
+#define TEST_R_IN2 19
+#define TEST_DEADZONE 80
 
 extern ControllerPtr myControllers[BP32_MAX_GAMEPADS]; // BP32 library allows for up to 4 concurrent controller connections, but we only need 1
 
@@ -37,10 +42,35 @@ void dumpGamepad(ControllerPtr ctl)
         ctl->l2(),
         ctl->r2());
 }
+//alrigh lowk all this rn 
+void testMotorInit() {
+    pinMode(TEST_L_IN1, OUTPUT); pinMode(TEST_L_IN2, OUTPUT);
+    pinMode(TEST_R_IN1, OUTPUT); pinMode(TEST_R_IN2, OUTPUT);
+}
+
+void testMotorSet(int in1, int in2, int speed) {   // -255..255
+    if (speed > 0)      { analogWrite(in1, speed); digitalWrite(in2, LOW); }
+    else if (speed < 0) { digitalWrite(in1, LOW);  analogWrite(in2, -speed); }
+    else                { digitalWrite(in1, LOW);  digitalWrite(in2, LOW); }
+}
+
+void testMotorStop() {
+    testMotorSet(TEST_L_IN1, TEST_L_IN2, 0);
+    testMotorSet(TEST_R_IN1, TEST_R_IN2, 0);
+}
+
+void testDrive(ControllerPtr ctl) {
+    int y = -ctl->axisY();                    // up = positive = forward
+    if (abs(y) < TEST_DEADZONE) y = 0;
+    int speed = constrain(y * 255 / 512, -255, 255);
+    testMotorSet(TEST_L_IN1, TEST_L_IN2, speed);
+    testMotorSet(TEST_R_IN1, TEST_R_IN2, speed);
+}
 
 void setup() {
     pinMode(ONBOARD_LED_PIN, OUTPUT);
     Serial.begin(115200);
+    testMotorInit();
     // qtr.setTypeAnalog(); // or setTypeAnalog()                                //////////////////////////////////////////////////.
     // qtr.setSensorPins((const uint8_t[]) {32, 33}, 2); // pin numbers go in the curly brackets {}, and number of sensors in use goes after
 
@@ -50,8 +80,8 @@ void setup() {
     //     delay(20);
     // }
 
-    setupLineSensor();
-    setupColorSensor();
+    //setupLineSensor();
+    //setupColorSensor();
 
     BP32.setup(&onConnectedController, &onDisconnectedController);
     BP32.forgetBluetoothKeys();
@@ -64,42 +94,37 @@ void setup() {
 
 void loop()
 {
-    vTaskDelay(1); // Ensures WDT does not get triggered when no controller is connected
+    vTaskDelay(1); // keeps the watchdog happy
     BP32.update();
 
-    // qtr.readLineBlack(sensors); // Get calibrated sensor values returned into sensors[]
-    // Console.printf("S1: %d S2: %d\n", sensors[0], sensors[1]);
-    // delay(250);
-
-    digitalWrite(ONBOARD_LED_PIN, HIGH); // writes a digital high to pin 2
-    delay(100); // waits for 1000 milliseconds (1 second)
-    digitalWrite(ONBOARD_LED_PIN, LOW); // writes a digital low to pin 2
-    delay(100);
-
-    for (auto myController : myControllers)
-    { // Only execute code when controller is connected
-        if (myController && myController->isConnected() && myController->hasData())
-        {
-
-            /*
-            ====================
-            Your code goes here!
-            ====================
-            */
-            while (true)
-            {
-                if (myController->a())
-                {
-                    setupLineSensor(); // idk if this work... something like this... make functions for whatever we want to do with controller buttons
-                }
-            }
-
-            dumpGamepad(myController); // Prints the gamepad state, delete or comment if don't need
-        }
+    // Non-blocking LED blink (replaces the two delay(100) calls)
+    static uint32_t lastBlink = 0;
+    if (millis() - lastBlink >= 200) {
+        lastBlink = millis();
+        digitalWrite(ONBOARD_LED_PIN, !digitalRead(ONBOARD_LED_PIN));
     }
 
-    // TODO: add a manual drive mode with triggers and dpad
+    static bool lastA = false;
+    bool controllerActive = false;
+    for (auto myController : myControllers)
+    {
+        if (myController && myController->isConnected()) controllerActive = true;
+        if (myController && myController->isConnected() && myController->hasData())
+        {
+            dumpGamepad(myController);
+            testDrive(myController);
+            controllerActive = true;
+            // A button: act once per press, not every loop
+            bool a = myController->a();
+            if (a && !lastA) {
+                Console.printf(">>> A pressed\n");
+                // setupLineSensor();  // re-enable later; just gonna comment for now, to test this
+            }
+            lastA = a;
+        }
+    }
+    if (!controllerActive) testMotorStop();
 
     // loopLineSensor();
-    loopColorSensor();
+    // loopColorSensor();   // commented out so nothing slows the loop while testing
 }
