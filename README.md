@@ -13,3 +13,14 @@ Wenshao (Andreas) He
 Anuj Yella
 
 Revanth
+
+
+| Part | ESP32 |
+| --- | --- |
+| DRV8833 AIN1, AIN2 | GPIO 16, 17 |
+| DRV8833 BIN1, BIN2 | GPIO 18, 19 |
+| DRV8833 SLP/SLEEP | 3.3V |
+| DRV8833 VCC/logic power | 5V |
+| APDS-9960 SDA, SCL | GPIO 21, 22 |
+| Line sensor outputs, left to right | GPIO 25, 26, 27, 32, 33, 34, 35, 39 |
+

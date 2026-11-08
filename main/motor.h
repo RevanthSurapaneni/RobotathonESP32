@@ -1,5 +1,5 @@
 #pragma once
 
 void setupMotor();
-void loopMotor();
-
+void setMotorSpeeds(int left, int right);
+void stopMotors();

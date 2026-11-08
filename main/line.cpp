@@ -1,58 +1,61 @@
-#include "sdkconfig.h"
 #include <Arduino.h>
-
 #include <QTRSensors.h>
+
 #include "line.h"
+#include "motor.h"
+#include "robot_config.h"
 
+namespace {
 QTRSensors qtr;
-uint16_t sensors[8];
-bool blackness[8];
-
-void setupLineSensor() { 
-    // set up Serial Communication and sensor pins
-    //USE LEFTMOST AND RIGHTMOST PINS MAYBE
-    qtr.setTypeAnalog(); // or setTypeAnalog()
-    qtr.setSensorPins((const uint8_t[]) {12, 14, 27, 26, 25, 33, 32, 35}, 8); // pin numbers go in the curly brackets {}, and number of sensors in use goes after
-
-    // calibration sequence
-    for (uint8_t i = 0; i < 250; i++) { 
-        printf("calibrating %d/250\n", i); // 250 is the number of calibrations recommended by manufacturer
-        qtr.calibrate(); 
-        delay(20);
-    }
-    printf("Calibration complete\n");
+uint16_t sensorValues[RobotPins::lineSensorCount];
+int lastError = 0;
+int darkReadings = 0;
+// the sensor position is measured in steps of 1000
+constexpr int kLineCenter = (RobotPins::lineSensorCount - 1) * 1000 / 2;
+constexpr float kP = 0.085f;
+constexpr float kD = 0.12f;
+constexpr int kDarkSensorValue = 800;
+constexpr int kEndReadingsNeeded = 25;
 }
 
-void loopLineSensor() {
-    qtr.readLineBlack(sensors); // Get calibrated sensor values returned into sensors[]
-    for(int i = 0; i < 8; i++){
-    printf("S1: %d S2: %d S3: %d S4: %d S5: %d S6: %d S7: %d S8: %d\n", sensors[0], sensors[1], sensors[2], sensors[3], sensors[4], sensors[5], sensors[6], sensors[7]);
+void setupLineSensor() {
+    qtr.setTypeAnalog();
+    qtr.setSensorPins(RobotPins::lineSensors, RobotPins::lineSensorCount);
+
+    Serial.println("calibrating line sensors, move them across the line");
+    for (uint8_t i = 0; i < 250; i++) {
+        qtr.calibrate();
+        delay(20);
+    }
+    Serial.println("line sensor calibration complete");
+}
+
+bool lineFollowStep() {
+    const uint16_t position = qtr.readLineWhite(sensorValues);
+    const int positionAsInt = position;
+    const int error = positionAsInt - kLineCenter;
+    const int derivative = error - lastError;
+    lastError = error;
+
+    int correction = kP * error + kD * derivative;
+    correction = constrain(correction, -kLineMaxCorrection, kLineMaxCorrection);
+    setMotorSpeeds(kLineBaseSpeed + correction, kLineBaseSpeed - correction);
+
+    bool allSensorsSeeDark = true;
+    for (uint8_t i = 0; i < RobotPins::lineSensorCount; i++) {
+        if (sensorValues[i] < kDarkSensorValue) {
+            allSensorsSeeDark = false;
+            break;
+        }
     }
 
-    //1000 = dark, 0 = white.
-
-    //WIP
-    for(int i = 0; i < 8; i++){
-        blackness[i] = sensors[i] > 500;
+    if (allSensorsSeeDark) {
+        if (darkReadings < kEndReadingsNeeded) {
+            darkReadings = darkReadings + 1;
+        }
+    } else {
+        darkReadings = 0;
     }
 
-    if(blackness[0] && blackness[7]){
-        //stop (both sides are black, 2 lines)
-    }
-    else if(blackness[0] && !blackness[7]){
-        //turn left (line on left)
-    }
-    else if(!blackness[0] && blackness[7]){
-        //turn right 
-    }
-    else{
-        //go straight (both sides are white, robot is presumably on the line).
-    }
-
-
-    //if color closer to black than white, turn motor(s)
-    //might only turn one motor to turn... can see if we need to turn by seeing how many sensors are on the line.
-
-
-    delay(250);
+    return darkReadings >= kEndReadingsNeeded;
 }

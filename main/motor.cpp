@@ -1,53 +1,40 @@
 
-#include "sdkconfig.h"
 #include <Arduino.h>
-#include <ESP32Servo.h>
+
 #include "motor.h"
+#include "robot_config.h"
 
-#define IN1  16  // Control pin 1
-#define IN2  17  // Control pin 2
-Servo myServo;
+namespace {
+// drv8833 uses one pin for each direction
+void setSingleMotor(uint8_t in1, uint8_t in2, int speed) {
+  speed = constrain(speed, -kMotorMax, kMotorMax);
+  if (speed > 0) {
+    analogWrite(in1, speed);
+    digitalWrite(in2, LOW);
+  } else if (speed < 0) {
+    digitalWrite(in1, LOW);
+    analogWrite(in2, -speed);
+  } else {
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, LOW);
+  }
+}
+
+}  // namespace
+
 void setupMotor() {
-  Serial.begin(115200);
-  pinMode(IN1, OUTPUT);
-  pinMode(IN2, OUTPUT);
-
-
-
-
-
-
-
-  //SERVO
-  myServo.attach(12);
+  pinMode(RobotPins::leftMotorIn1, OUTPUT);
+  pinMode(RobotPins::leftMotorIn2, OUTPUT);
+  pinMode(RobotPins::rightMotorIn1, OUTPUT);
+  pinMode(RobotPins::rightMotorIn2, OUTPUT);
+  stopMotors();
 }
 
-void loopMotor() {
-
-    // Spin motor
-    analogWrite(IN1, 255);  // PWM signal
-    digitalWrite(IN2, LOW); // Direction control
-
-    delay(1000);  // Run for 1 second
-
-    // Stop motor
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, LOW);
-
-    delay(1000); // Stop for 1 second
-
-
-    //SERVO
-    myServo.write(0); 
-    delay(1000); // Delay 1000 ms
-    myServo.write(180); 
-    delay(1000);
-
-    //TODO: need a different task delay? put servo in different file?
-
-    vTaskDelay(1); // Yield CPU to not starve other ESP32 processes and cause WDT reset
+void setMotorSpeeds(int left, int right) {
+  setSingleMotor(RobotPins::leftMotorIn1, RobotPins::leftMotorIn2, left);
+  setSingleMotor(RobotPins::rightMotorIn1, RobotPins::rightMotorIn2, right);
 }
 
-void spinMotor1(){
-
+void stopMotors() {
+  setMotorSpeeds(0, 0);
 }
