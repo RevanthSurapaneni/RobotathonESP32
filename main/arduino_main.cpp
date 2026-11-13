@@ -35,6 +35,7 @@ void loop() {
         if (!controller->isConnected()) {
             continue;
         }
+        controllerActive = true;
         if (!controller->hasData()) {
             continue;
         }
@@ -64,7 +65,7 @@ void loop() {
                 speed = -controller->axisY() * 255 / 512;
                 speed = constrain(speed, -255, 255);
             }
-            int turn = controller->axisX() * 120 / 512;
+            int turn = abs(controller->axisX()) < 80 ? 0 : controller->axisX() * 120 / 512;
             setMotorSpeeds(speed + turn, speed - turn);
         }
     }

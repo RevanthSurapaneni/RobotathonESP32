@@ -25,13 +25,13 @@ void setupLineSensor() {
     Serial.println("calibrating line sensors, move them across the line");
     for (uint8_t i = 0; i < 250; i++) {
         qtr.calibrate();
-        delay(20);
+        delay(20);    
     }
     Serial.println("line sensor calibration complete");
 }
 
 bool lineFollowStep() {
-    const uint16_t position = qtr.readLineWhite(sensorValues);
+    const uint16_t position = qtr.readLineBlack(sensorValues);
     const int positionAsInt = position;
     const int error = positionAsInt - kLineCenter;
     const int derivative = error - lastError;
