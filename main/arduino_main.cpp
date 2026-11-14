@@ -76,7 +76,7 @@ void loop() {
         }
         if(y && !lastY) {
             Serial.println("pressed Y");
-            calibrateLineSensor();
+            calibrate();
         }
 
         lastA = a;
