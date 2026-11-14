@@ -27,6 +27,8 @@ void loop() {
     static RunMode mode = RunMode::Manual;
     static bool lastA = false;
     static bool lastB = false;
+    static bool lastX = false;
+    static bool lastY = false;
 
     
     bool controllerActive = false;
@@ -43,32 +45,50 @@ void loop() {
         }
 
         controllerActive = true;
-        bool a = controller->a();
-        bool b = controller->b();
+        bool a = controller->b();
+        bool b = controller->a();
+        bool x = controller->y();
+        bool y = controller->x();
+
+
+
         // buttons only change modes when they are first pressed
         if (a && !lastA) {
+            Serial.println("pressed A");
             startColorTrack();
             mode = RunMode::ColorTrack;
         }
         if (b && !lastB) {
+            Serial.println("pressed B");
             mode = RunMode::LineFollow;
         }
-        if (controller->x()) {
+        if (x && !lastX) {
+            Serial.println("pressed X");
             mode = RunMode::Manual;
         }
+        if(y && !lastY) {
+            Serial.println("pressed Y");
+            calibrateLineSensor();
+        }
+
         lastA = a;
         lastB = b;
+        lastX = x;
+        lastY = y;
 
         if (mode == RunMode::Manual) {
-            int speed;
-            if (abs(controller->axisY()) < 80) {
-                speed = 0;
-            } else {
-                speed = -controller->axisY() * 255 / 512;
-                speed = constrain(speed, -255, 255);
-            }
-            int turn = abs(controller->axisX()) < 80 ? 0 : controller->axisX() * 120 / 512;
-            setMotorSpeeds(speed + turn, speed - turn);
+            // int speed;
+            // if (abs(controller->axisY()) < 80) {
+            //     speed = 0;
+            // } else {
+            //     speed = -controller->axisY() * 255 / 512;
+            //     speed = constrain(speed, -255, 255);
+            // }
+            // int turn = abs(controller->axisX()) < 80 ? 0 : controller->axisX() * 120 / 512;
+            // setMotorSpeeds(speed + turn, speed - turn);
+
+            setMotorSpeeds(255, 255);
+
         }
     }
     if (!controllerActive && mode == RunMode::Manual) {
