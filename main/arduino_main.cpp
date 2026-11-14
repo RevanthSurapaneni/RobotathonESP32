@@ -6,6 +6,7 @@
 #include "color.h"
 #include "line.h"
 #include "motor.h"
+#include "robot_config.h"
 
 enum class RunMode
 {
@@ -48,17 +49,11 @@ void loop()
             continue;
         }
         controllerActive = true;
-        uint8_t dpad = controller->dpad();
 
         bool a = controller->b();
         bool b = controller->a();
         bool x = controller->y();
         bool y = controller->x();
-
-        bool left = dpad & DPAD_LEFT;
-        bool right = dpad & DPAD_RIGHT;
-        bool up = dpad & DPAD_UP;
-        bool down = dpad & DPAD_DOWN;
 
         // buttons only change modes when they are first pressed
         if (a && !lastA)
@@ -90,30 +85,24 @@ void loop()
 
         if (mode == RunMode::Manual)
         {
+            constexpr int kJoystickDeadzone = 80;
+            int forward = -controller->axisY();
+            int turn = controller->axisRX();
 
-            int leftSpeed = 0;
-            int rightSpeed = 0;
+            if (abs(forward) < kJoystickDeadzone)
+            {
+                forward = 0;
+            }
+            if (abs(turn) < kJoystickDeadzone)
+            {
+                turn = 0;
+            }
 
-            if (up && !down)
-            {
-                leftSpeed = 255;
-                rightSpeed = 255;
-            }
-            else if (down && !up)
-            {
-                leftSpeed = -255;
-                rightSpeed = -255;
-            }
-            else if (left && !right)
-            {
-                leftSpeed = -255;
-                rightSpeed = 255;
-            }
-            else if (right && !left)
-            {
-                leftSpeed = 255;
-                rightSpeed = -255;
-            }
+            forward = forward * kMotorMax / 512;
+            turn = turn * kMotorMax / 512;
+
+            const int leftSpeed = constrain(forward + turn, -kMotorMax, kMotorMax);
+            const int rightSpeed = constrain(forward - turn, -kMotorMax, kMotorMax);
             setMotorSpeeds(leftSpeed, rightSpeed);
         }
     }
