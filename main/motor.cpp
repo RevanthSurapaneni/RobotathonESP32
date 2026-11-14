@@ -33,7 +33,7 @@ void setupMotor() {
 void setMotorSpeeds(int left, int right) {
   setSingleMotor(RobotPins::leftMotorIn1, RobotPins::leftMotorIn2, left);
   setSingleMotor(RobotPins::rightMotorIn1, RobotPins::rightMotorIn2, right);
-  vTaskDelay(1); //what does this do???
+
 }
 
 void stopMotors() {

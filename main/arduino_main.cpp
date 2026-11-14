@@ -15,7 +15,6 @@ void setup() {
     setupMotor();
     setupLineSensor();
     setupColorSensor();
-
     BP32.setup(&onConnectedController, &onDisconnectedController);
     uni_bt_allowlist_set_enabled(false);
 }
@@ -29,7 +28,7 @@ void loop() {
     static bool lastB = false;
     static bool lastX = false;
     static bool lastY = false;
-
+   
     
     bool controllerActive = false;
     for (ControllerPtr controller : controllers) {
@@ -45,10 +44,19 @@ void loop() {
         }
 
         controllerActive = true;
+        uint8_t dpad = controller->dpad();
+
         bool a = controller->b();
         bool b = controller->a();
         bool x = controller->y();
         bool y = controller->x();
+
+        bool left = dpad & DPAD_LEFT;
+        bool right = dpad & DPAD_RIGHT;
+        bool up = dpad & DPAD_UP;
+        bool down = dpad & DPAD_DOWN;
+
+
 
 
 
@@ -86,8 +94,26 @@ void loop() {
             // }
             // int turn = abs(controller->axisX()) < 80 ? 0 : controller->axisX() * 120 / 512;
             // setMotorSpeeds(speed + turn, speed - turn);
+            int leftSpeed;
+            int rightSpeed;
 
-            setMotorSpeeds(255, 255);
+            if(left && !right) {
+                leftSpeed = -255;
+                rightSpeed = 255;
+            } else if(!left && right) {
+                leftSpeed = 255;
+                rightSpeed = -255;
+            } else if(up && !down) {
+                leftSpeed = 255;
+                rightSpeed = 255;
+            } else if(!up && down) {
+                leftSpeed = -255;
+                rightSpeed = -255;
+            } else {
+                leftSpeed = 0;
+                rightSpeed = 0;
+            }
+            setMotorSpeeds(leftSpeed, rightSpeed);
 
         }
     }

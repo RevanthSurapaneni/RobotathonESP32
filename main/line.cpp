@@ -22,19 +22,18 @@ void setupLineSensor() {
     qtr.setTypeAnalog();
     qtr.setSensorPins(RobotPins::lineSensors, RobotPins::lineSensorCount);
 
-    //calibrateLineSensor();
+    
+    Serial.println("line sensor calibration complete");
 }
 
-void calibrateLineSensor(){
+void calibrate(){
+
     Serial.println("calibrating line sensors, move them across the line");
     for (uint8_t i = 0; i < 5; i++) {
         qtr.calibrate();
         delay(20);    
     }
-    Serial.println("line sensor calibration complete");
-
 }
-
 bool lineFollowStep() {
     const uint16_t position = qtr.readLineBlack(sensorValues);
     const int positionAsInt = position;
