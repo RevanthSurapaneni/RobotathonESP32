@@ -26,7 +26,7 @@ void setupLineSensor() {
     Serial.println("line sensor calibration complete");
 }
 
-void calibrate(){
+void calibrateLineSensor(){
 
     Serial.println("calibrating line sensors, move them across the line");
     for (uint8_t i = 0; i < 5; i++) {
