@@ -23,7 +23,7 @@ void setupLineSensor() {
     qtr.setSensorPins(RobotPins::lineSensors, RobotPins::lineSensorCount);
 
     Serial.println("calibrating line sensors, move them across the line");
-    for (uint8_t i = 0; i < 250; i++) {
+    for (uint8_t i = 0; i < 5; i++) {
         qtr.calibrate();
         delay(20);    
     }

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Bluepad32.h>
+#include <uni.h>
 
 #include "controller_callbacks.h"
 #include "color.h"
@@ -16,6 +17,7 @@ void setup() {
     setupColorSensor();
 
     BP32.setup(&onConnectedController, &onDisconnectedController);
+    uni_bt_allowlist_set_enabled(false);
 }
 
 void loop() {
