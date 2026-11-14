@@ -17,7 +17,6 @@ constexpr uint8_t lineSensors[] = {12, 14, 27, 26, 25, 33, 32, 35};
 constexpr uint8_t lineSensorCount = sizeof(lineSensors) / sizeof(lineSensors[0]);
 }  // namespace RobotPins
 
-constexpr int kMotorMax = 255;
-constexpr int kLineBaseSpeed = 145;
-constexpr int kLineMaxCorrection = 145;
- 
+constexpr int MotorMax = 255;
+constexpr int LineBaseSpeed = 145;
+constexpr int LineMaxCorrection = 145;

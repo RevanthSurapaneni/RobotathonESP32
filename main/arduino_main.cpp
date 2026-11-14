@@ -67,7 +67,7 @@ void loop()
             Serial.println("pressed B");
             mode = RunMode::LineFollow;
         }
-        if (x && !lastX)
+        if (x && !lastX) //not using this rn
         {
             Serial.println("pressed X");
             mode = RunMode::Manual;
@@ -75,7 +75,7 @@ void loop()
         if (y && !lastY)
         {
             Serial.println("pressed Y");
-            calibrate();
+            calibrateLineSensor();
         }
 
         lastA = a;
@@ -85,24 +85,24 @@ void loop()
 
         if (mode == RunMode::Manual)
         {
-            constexpr int kJoystickDeadzone = 80;
+            constexpr int deadzone = 80;
             int forward = -controller->axisY();
             int turn = controller->axisRX();
 
-            if (abs(forward) < kJoystickDeadzone)
+            if (abs(forward) < deadzone)
             {
                 forward = 0;
             }
-            if (abs(turn) < kJoystickDeadzone)
+            if (abs(turn) < deadzone)
             {
                 turn = 0;
             }
 
-            forward = forward * kMotorMax / 512;
-            turn = turn * kMotorMax / 512;
+            forward = forward * MotorMax / 512;
+            turn = turn * MotorMax / 512;
 
-            const int leftSpeed = constrain(forward + turn, -kMotorMax, kMotorMax);
-            const int rightSpeed = constrain(forward - turn, -kMotorMax, kMotorMax);
+            const int leftSpeed = constrain(forward + turn, -MotorMax, MotorMax);
+            const int rightSpeed = constrain(forward - turn, -MotorMax, MotorMax);
             setMotorSpeeds(leftSpeed, rightSpeed);
         }
     }
@@ -111,10 +111,10 @@ void loop()
         stopMotors();
     }
 
-    // both autonomous modes use the same line follower
     if (mode == RunMode::ColorTrack)
     {
-        lineFollowStep();
+        
+        setMotorSpeeds(150, 150);
         if (colorTrackStep())
         {
             Serial.println("first color reached again, stopping");

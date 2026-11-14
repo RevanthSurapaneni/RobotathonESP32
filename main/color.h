@@ -2,6 +2,7 @@
 
 void setupColorSensor();
 void startColorTrack();
+void printColor();
 
 enum class ColorId {
     None,

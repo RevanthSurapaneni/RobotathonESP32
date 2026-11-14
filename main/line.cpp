@@ -6,60 +6,80 @@
 #include "robot_config.h"
 
 namespace {
-QTRSensors qtr;
-uint16_t sensorValues[RobotPins::lineSensorCount];
-int lastError = 0;
-int darkReadings = 0;
-// the sensor position is measured in steps of 1000
-constexpr int kLineCenter = (RobotPins::lineSensorCount - 1) * 1000 / 2;
-constexpr float kP = 0.085f;
-constexpr float kD = 0.12f;
-constexpr int kDarkSensorValue = 800;
-constexpr int kEndReadingsNeeded = 25;
+QTRSensors lineSensor;
+uint16_t calibratedSensorValues[RobotPins::lineSensorCount];
+int consecutiveAllWhiteReadings = 0;
+
+constexpr int whiteSurfaceThreshold = 800;
+constexpr int requiredEndReadings = 25;
+constexpr uint16_t calibrationReadingCount = 250;
+bool lineSensorIsCalibrated = false;
 }
 
 void setupLineSensor() {
-    qtr.setTypeAnalog();
-    qtr.setSensorPins(RobotPins::lineSensors, RobotPins::lineSensorCount);
-
-    
-    Serial.println("line sensor calibration complete");
+    lineSensor.setTypeAnalog();
+    lineSensor.setSensorPins(RobotPins::lineSensors, RobotPins::lineSensorCount);
+    lineSensorIsCalibrated = false;
 }
 
 void calibrateLineSensor(){
 
-    Serial.println("calibrating line sensors, move them across the line");
-    for (uint8_t i = 0; i < 5; i++) {
-        qtr.calibrate();
+    stopMotors();
+    Serial.println("calibrating line sensors");
+    for (uint16_t reading = 0; reading < calibrationReadingCount; reading++) {
+        lineSensor.calibrate();
         delay(20);    
     }
+
+    consecutiveAllWhiteReadings = 0;
+    lineSensorIsCalibrated = true;
+    Serial.println("line sensor calibrated");
 }
 bool lineFollowStep() {
-    const uint16_t position = qtr.readLineBlack(sensorValues);
-    const int positionAsInt = position;
-    const int error = positionAsInt - kLineCenter;
-    const int derivative = error - lastError;
-    lastError = error;
+    if (!lineSensorIsCalibrated) {
+        stopMotors();
+        return false;
+    }
 
-    int correction = kP * error + kD * derivative;
-    correction = constrain(correction, -kLineMaxCorrection, kLineMaxCorrection);
-    setMotorSpeeds(kLineBaseSpeed + correction, kLineBaseSpeed - correction);
+    lineSensor.readLineWhite(calibratedSensorValues);
 
-    bool allSensorsSeeDark = true;
+    bool allSensorsSeeWhite = true;
     for (uint8_t i = 0; i < RobotPins::lineSensorCount; i++) {
-        if (sensorValues[i] < kDarkSensorValue) {
-            allSensorsSeeDark = false;
+        if (calibratedSensorValues[i] < whiteSurfaceThreshold) {
+            allSensorsSeeWhite = false;
             break;
         }
     }
 
-    if (allSensorsSeeDark) {
-        if (darkReadings < kEndReadingsNeeded) {
-            darkReadings = darkReadings + 1;
+    if (allSensorsSeeWhite) {
+        if (consecutiveAllWhiteReadings < requiredEndReadings) {
+            consecutiveAllWhiteReadings++;
         }
     } else {
-        darkReadings = 0;
+        consecutiveAllWhiteReadings = 0;
     }
 
-    return darkReadings >= kEndReadingsNeeded;
+    bool centerSeesWhite =
+        calibratedSensorValues[3] >= whiteSurfaceThreshold ||
+        calibratedSensorValues[4] >= whiteSurfaceThreshold;
+    bool leftSeesWhite =
+        calibratedSensorValues[0] >= whiteSurfaceThreshold ||
+        calibratedSensorValues[1] >= whiteSurfaceThreshold ||
+        calibratedSensorValues[2] >= whiteSurfaceThreshold;
+    bool rightSeesWhite =
+        calibratedSensorValues[5] >= whiteSurfaceThreshold ||
+        calibratedSensorValues[6] >= whiteSurfaceThreshold ||
+        calibratedSensorValues[7] >= whiteSurfaceThreshold;
+
+    if (centerSeesWhite) {
+        setMotorSpeeds(250, 250);
+    } else if (leftSeesWhite) {
+        setMotorSpeeds(-100, 150);
+    } else if (rightSeesWhite) {
+        setMotorSpeeds(150, -100);
+    } else {
+        stopMotors();  //if there is no white, probably at the end
+    }
+
+    return consecutiveAllWhiteReadings >= requiredEndReadings;
 }
